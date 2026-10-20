@@ -1,0 +1,18 @@
+# Cloudflare Workers config (Workers + static assets).
+#
+#   web/        -> static site, served directly by Cloudflare
+#   src/        -> the Worker, which handles /api/live
+#
+# Deployed by Workers Builds from GitHub: the build runs `npx wrangler deploy`
+# with credentials the build system injects, so no API token setup is needed.
+#
+# The NTA key is NOT here. Add it in the dashboard under
+# Settings > Variables and Secrets as type "Secret", named NTA_API_KEY.
+
+name = "dublin-bus-82"
+main = "src/index.js"
+compatibility_date = "2026-10-20"
+
+[assets]
+directory = "./web"
+binding = "ASSETS"

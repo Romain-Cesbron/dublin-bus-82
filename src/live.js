@@ -1,16 +1,14 @@
 /**
- * Cloudflare Pages Function: GET /api/live
- *
- * The deployed equivalent of server.py's NTA GTFS-Realtime proxy. Same path,
- * same response shape, so web/app.js needs no change between running locally
- * against server.py and running on Pages.
+ * GET /api/live - the deployed equivalent of server.py's NTA GTFS-Realtime
+ * proxy. Same path and same response shape, so web/app.js needs no change
+ * between running locally against server.py and running on Cloudflare.
  *
  * Why a function at all: the NTA API sends no CORS headers, so a browser
  * cannot call it directly even with a key in hand. The key also has to stay
  * server-side, and here it lives in the NTA_API_KEY environment secret.
  *
- * Set it once with:
- *   npx wrangler pages secret put NTA_API_KEY
+ * Set it as a secret on the Worker (dashboard: Settings -> Variables and
+ * Secrets -> type Secret).
  */
 
 const GTFSR_BASE = "https://api.nationaltransport.ie/gtfsr/v2";
@@ -182,16 +180,16 @@ async function fetchFeed(endpoint, key) {
   return { payload, cached: false };
 }
 
-export async function onRequestGet({ env }) {
+export async function handleLive(env) {
   const key = env.NTA_API_KEY;
   if (!key) {
     return json({
       ok: false,
       reason: "no_api_key",
       message:
-        "NTA_API_KEY is not set on this deployment. Set it with " +
-        "`npx wrangler pages secret put NTA_API_KEY`. Showing timetable " +
-        "positions instead.",
+        "NTA_API_KEY is not set on this deployment. Add it in the Cloudflare " +
+        "dashboard under Settings > Variables and Secrets, type Secret. " +
+        "Showing timetable positions instead.",
     });
   }
 
