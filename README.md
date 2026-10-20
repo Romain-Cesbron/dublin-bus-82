@@ -191,14 +191,27 @@ makes about 120.
 `server.py`'s proxy - same path, same response shape, so the frontend is
 identical whether it is talking to the local Python server or to Pages.
 
-```bash
-npx wrangler login
-npx wrangler pages secret put NTA_API_KEY     # paste the key when prompted
-npx wrangler pages deploy web
-```
+Deploy from the Cloudflare dashboard - no local tooling, no Node, no card:
 
-Or connect the GitHub repo in the Cloudflare dashboard and set **build output
-directory** to `web`; it then rebuilds on every push to `main`.
+1. **Workers & Pages -> Create -> Pages tab -> Connect to Git**, pick this repo.
+2. Build settings:
+   - Framework preset: **None**
+   - Build command: **empty**
+   - **Deploy command: empty**
+   - Build output directory: **`web`**
+3. **Settings -> Variables and Secrets** -> add `NTA_API_KEY` as type
+   **Secret** -> **Retry deployment**.
+
+Cloudflare picks up `functions/api/live.js` from the repo root automatically;
+that is why it sits outside `web/`.
+
+Leave the **deploy command empty**. A static Pages project is uploaded by the
+build system directly, which needs no credentials. Setting a deploy command
+makes the build shell out to `wrangler`, which then wants its own API token,
+and a `CLOUDFLARE_API_TOKEN` scoped without Pages rights fails with
+`Authentication error [code: 10000]`. There is no `wrangler.toml` in this repo
+for the same reason - its presence pushes the dashboard into that mode. Add one
+back only if you later want to deploy from a machine that has Node.
 
 ### Why not GitHub Pages on its own
 
