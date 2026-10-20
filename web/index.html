@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dublin Bus 82 — live tracker</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+  <aside id="sidebar">
+    <header id="brand">
+      <div class="route-badge">82</div>
+      <div class="brand-text">
+        <h1 id="route-name">Dublin Bus 82</h1>
+        <p id="route-sub">loading route data…</p>
+      </div>
+    </header>
+
+    <div id="status-bar" class="status status--pending">
+      <span class="status-dot"></span>
+      <span id="status-text">Connecting…</span>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab is-active" data-tab="trip">My trip</button>
+      <button class="tab" data-tab="buses">Buses <span id="bus-count-pill" class="pill">0</span></button>
+      <button class="tab" data-tab="stops">Stops <span id="stop-count-pill" class="pill">0</span></button>
+      <button class="tab" data-tab="about">Setup</button>
+    </nav>
+
+    <section class="tab-panel is-active" data-panel="trip">
+      <div id="journeys" class="list"></div>
+      <p class="jnote">
+        Times are predicted from each bus's live position and current delay,
+        not the timetable. Rows marked <em>timetable</em> have no bus assigned
+        yet, so those are scheduled times only.
+      </p>
+    </section>
+
+    <section class="tab-panel" data-panel="buses">
+      <div class="filters">
+        <label class="filter">
+          <span>Direction</span>
+          <select id="direction-filter">
+            <option value="all">Both directions</option>
+            <option value="0">Outbound →</option>
+            <option value="1">Inbound →</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="toggle-stops" checked>
+          <span>Show all stops</span>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="toggle-follow">
+          <span>Auto-fit to buses</span>
+        </label>
+        <button id="fit-btn" class="text-btn">Fit whole route</button>
+      </div>
+      <div id="bus-list" class="list"></div>
+    </section>
+
+    <section class="tab-panel" data-panel="stops">
+      <input type="search" id="stop-search" class="search" placeholder="Search 129 stops…" autocomplete="off">
+      <div id="stop-list" class="list"></div>
+    </section>
+
+    <section class="tab-panel" data-panel="about">
+      <div class="prose">
+        <h2>Live positions need a free key</h2>
+        <p>Stops, the route line and timetable positions work with no setup. Real
+           GPS positions come from the National Transport Authority's
+           GTFS&#8209;Realtime feed, which requires a free API key.</p>
+        <ol>
+          <li>Register at
+            <a href="https://developer.nationaltransport.ie" target="_blank" rel="noopener">developer.nationaltransport.ie</a>
+          </li>
+          <li>Subscribe to the <strong>GTFS&#8209;Realtime</strong> product and copy your
+              primary key.</li>
+          <li>Put it in a file called <code>.nta_key</code> next to
+              <code>server.py</code>, or export <code>NTA_API_KEY</code>, then
+              restart the server.</li>
+        </ol>
+        <p class="muted">The key is only ever read by the local Python server —
+           it is never sent to the browser.</p>
+        <h2>Data sources</h2>
+        <ul>
+          <li>Schedule &amp; stops: TFI GTFS feed <span id="feed-date" class="muted"></span></li>
+          <li>Live vehicles: NTA GTFS&#8209;Realtime <code>Vehicles</code> + <code>TripUpdates</code></li>
+          <li>Map tiles: OpenStreetMap contributors</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer id="foot">
+      <span id="last-update">—</span>
+      <button id="refresh-btn" class="ghost-btn" title="Refresh now">↻</button>
+    </footer>
+  </aside>
+
+  <main id="map-wrap">
+    <div id="map"></div>
+    <div id="map-overlays">
+      <div id="mode-badge" class="mode-badge"></div>
+      <div id="legend">
+        <div><span class="key key--out"></span> Outbound <em id="legend-out"></em></div>
+        <div><span class="key key--in"></span> Inbound <em id="legend-in"></em></div>
+        <div><span class="key key--stop"></span> Stop</div>
+        <div><span class="key key--bus"></span> Bus</div>
+        <div><span class="key key--watch"></span> My stop</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="app.js"></script>
+</body>
+</html>
