@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bus82",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["server.py", "--port", "8082"],
+      "port": 8082
+    }
+  ]
+}
