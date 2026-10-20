@@ -30,7 +30,7 @@ from http.server import SimpleHTTPRequestHandler
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(HERE, "web")
-DATA_DIR = os.path.join(HERE, "data")
+DATA_DIR = os.path.join(WEB_DIR, "data")   # served statically too
 KEY_FILE = os.path.join(HERE, ".nta_key")
 
 GTFSR_BASE = "https://api.nationaltransport.ie/gtfsr/v2"
@@ -343,14 +343,6 @@ class Handler(SimpleHTTPRequestHandler):
                 "trip_count": len(TRIP_IDS),
                 "server_time": int(time.time()),
             })
-            return
-
-        if path == "/api/route":
-            self.send_data_file("route.json")
-            return
-
-        if path == "/api/schedule":
-            self.send_data_file("schedule.json")
             return
 
         if path == "/api/live":

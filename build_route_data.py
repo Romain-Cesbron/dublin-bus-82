@@ -161,5 +161,7 @@ def main(gtfs_dir, out_path):
 
 if __name__ == "__main__":
     gtfs = sys.argv[1]
+    os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build"),
+                exist_ok=True)
     here = os.path.dirname(os.path.abspath(__file__))
-    main(gtfs, os.path.join(here, "data", "route82.json"))
+    main(gtfs, os.path.join(here, "build", "route82.json"))

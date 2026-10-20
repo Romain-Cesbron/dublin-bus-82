@@ -148,27 +148,73 @@ is no better than the timetable, which is why those rows say so.
 ## Layout
 
 ```
-server.py            local web server + NTA GTFS-R proxy (stdlib only)
-mock_feed.py         synthetic GTFS-R feed for testing without a key
-build_route_data.py  extracts route 82 out of the full GTFS feed
-split_data.py        splits that into a small map payload + a schedule payload
-refresh_gtfs.sh      re-download the feed and rebuild both payloads
-data/route.json      stops, shapes, patterns, calendar  (0.6 MB)
-data/schedule.json   1,420 trips as [stop_id, seconds] pairs  (2.2 MB)
-web/                 index.html, app.js, style.css
+server.py                 local web server + NTA GTFS-R proxy (stdlib only)
+functions/api/live.js     the same proxy as a Cloudflare Pages Function
+wrangler.toml             Pages config (no secrets in it)
+mock_feed.py              synthetic GTFS-R feed for testing without a key
+build_route_data.py       extracts route 82 out of the full GTFS feed
+split_data.py             splits that into a map payload + a schedule payload
+refresh_gtfs.sh           re-download the feed and rebuild both payloads
+web/index.html            the app
+web/app.js                map, predictions, commute view
+web/style.css
+web/data/route.json       stops, shapes, patterns, calendar  (0.6 MB)
+web/data/schedule.json    1,420 trips as [stop_id, seconds]  (2.1 MB)
+build/                    intermediate GTFS extract, gitignored
 ```
+
+Everything the browser needs sits under `web/`, so the only dynamic endpoint is
+`/api/live`. `server.py` serves `web/` statically and handles `/api/live`
+locally; on Pages the static files are served directly and the function handles
+`/api/live`.
 
 ### HTTP endpoints
 
 | Endpoint | Returns |
 | --- | --- |
 | `GET /api/status` | whether a key is configured, known route/trip ids |
-| `GET /api/route` | stops, shapes, direction patterns, service calendar |
-| `GET /api/schedule` | per-trip stop times |
+| `GET /data/route.json` | stops, shapes, direction patterns, service calendar (static) |
+| `GET /data/schedule.json` | per-trip stop times (static) |
 | `GET /api/live` | route-82 vehicles + trip updates, or a reason it can't (`no_api_key`, `rate_limited`, `bad_api_key`, `upstream_error`) |
 
 Upstream responses are cached for 30 s so the browser's polling doesn't
 multiply into extra NTA API calls. See **Rate limiting** above.
+
+## Deploying (Cloudflare Pages, free)
+
+Everything except `/api/live` is static, so the site is a static host plus one
+small function. On the free plan this costs nothing and needs no card: Workers
+allow 100,000 requests/day and a single user with the page open an hour a day
+makes about 120.
+
+[`functions/api/live.js`](functions/api/live.js) is the deployed equivalent of
+`server.py`'s proxy - same path, same response shape, so the frontend is
+identical whether it is talking to the local Python server or to Pages.
+
+```bash
+npx wrangler login
+npx wrangler pages secret put NTA_API_KEY     # paste the key when prompted
+npx wrangler pages deploy web
+```
+
+Or connect the GitHub repo in the Cloudflare dashboard and set **build output
+directory** to `web`; it then rebuilds on every push to `main`.
+
+### Why not GitHub Pages on its own
+
+Pages serves static files only, so there is nowhere to keep the API key - and
+more fundamentally the NTA API returns no `Access-Control-Allow-Origin` header,
+so a browser cannot call it directly whatever you do about the key. Without a
+proxy you get the map, the stops and the timetable panels, but no live
+positions and no predictions.
+
+### Rate limiting when deployed
+
+The function caches each upstream feed for 60s through Cloudflare's cache, so
+repeat loads and additional visitors are served without a fresh NTA call. This
+matters more than it sounds: the free NTA tier returns 429 at surprisingly low
+rates, and a single browser polling every 30s is already enough to trip it
+without caching.
 
 ## Testing without a key
 

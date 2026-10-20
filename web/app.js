@@ -492,7 +492,7 @@
   }
 
   function loadStatic() {
-    return getJSON("/api/route").then(function (route) {
+    return getJSON("data/route.json").then(function (route) {
       state.route = route;
       resolveWatched();
       drawRoute();
@@ -510,7 +510,7 @@
         if (opt && p) opt.textContent = (d === "0" ? "Outbound" : "Inbound") + " — to " + p.headsign;
       });
       $("#feed-date").textContent = "(built " + route.generated_at_utc.slice(0, 10) + ")";
-      return getJSON("/api/schedule");
+      return getJSON("data/schedule.json");
     }).then(function (schedule) {
       state.schedule = schedule;
       buildStopIndex();

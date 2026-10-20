@@ -8,7 +8,7 @@ import json
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "data")
+DATA = os.path.join(HERE, "web", "data")
 
 
 def to_secs(hhmmss):
@@ -17,7 +17,7 @@ def to_secs(hhmmss):
 
 
 def main():
-    with open(os.path.join(DATA, "route82.json"), encoding="utf-8") as fh:
+    with open(os.path.join(HERE, "build", "route82.json"), encoding="utf-8") as fh:
         src = json.load(fh)
 
     route_payload = {

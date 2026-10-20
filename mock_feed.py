@@ -13,7 +13,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(HERE, "data")
+DATA_DIR = os.path.join(HERE, "web", "data")
 
 _cache = {}
 
